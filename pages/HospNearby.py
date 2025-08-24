@@ -56,84 +56,20 @@ health_conditions = [
 ]
 
 
-# Function to get user's approximate location using IP geolocation (alternative method)
-def get_location_from_ip():
-    """
-    Alternative location method using IP geolocation
-    """
+# Function to get user's approximate location using Google Geolocation API
+def get_location_from_google_api():
+    # FIXED: Correct Google Geolocation API endpoint
+    url = f"https://www.googleapis.com/geolocation/v1/geolocate?key={GOOGLE_API_KEY}"
+    payload = {
+        "considerIp": True
+    }
     try:
-        # Using a free IP geolocation service
-        response = requests.get('https://ipapi.co/json/', timeout=10)
+        response = requests.post(url, json=payload)
         response.raise_for_status()
-        data = response.json()
-        
-        if 'latitude' in data and 'longitude' in data:
-            return {
-                'location': {
-                    'lat': data['latitude'],
-                    'lng': data['longitude']
-                },
-                'accuracy': 10000,  # IP-based location is less accurate
-                'city': data.get('city', 'Unknown'),
-                'region': data.get('region', 'Unknown'),
-                'country': data.get('country_name', 'Unknown')
-            }
-    except Exception as e:
-        st.error(f"IP geolocation failed: {e}")
-    return None
-
-
-# Function to get user's location - try multiple methods
-def get_user_location():
-    """
-    Try multiple methods to get user location
-    """
-    # Method 1: Try browser geolocation (if available)
-    # Note: This requires HTTPS and user permission, which may not work in Streamlit Cloud
-    
-    # Method 2: Use IP-based geolocation as fallback
-    location_data = get_location_from_ip()
-    
-    if location_data:
-        return location_data
-    
-    # Method 3: Ask user to input location manually as last resort
-    st.warning("⚠️ Unable to automatically detect location. Please enter your city/area manually.")
-    return None
-
-
-# Function to get coordinates from city name using Google Geocoding API
-def geocode_location(city_name):
-    """
-    Convert city name to coordinates using Google Geocoding API
-    """
-    try:
-        encoded_city = urllib.parse.quote(city_name)
-        url = f"https://maps.googleapis.com/maps/api/geocode/json?address={encoded_city}&key={GOOGLE_API_KEY}"
-        
-        response = requests.get(url, timeout=10)
-        response.raise_for_status()
-        data = response.json()
-        
-        if data['status'] == 'OK' and data['results']:
-            location = data['results'][0]['geometry']['location']
-            formatted_address = data['results'][0]['formatted_address']
-            
-            return {
-                'location': {
-                    'lat': location['lat'],
-                    'lng': location['lng']
-                },
-                'accuracy': 1000,
-                'formatted_address': formatted_address
-            }
-        else:
-            st.error(f"Geocoding failed: {data.get('status', 'Unknown error')}")
-    
-    except Exception as e:
-        st.error(f"Failed to geocode location: {e}")
-    
-    return None
+        return response.json()
+    except requests.RequestException as e:
+        st.error(f"Failed to get location: {e}")
+        return None
 
 
 # Function to get nearby hospitals using Google Places API
@@ -151,16 +87,9 @@ def get_nearby_hospitals(lat, lng, hospital_type, radius_km):
         f"location={lat},{lng}&radius={radius}&type=hospital&keyword={urllib.parse.quote(keyword)}&key={GOOGLE_API_KEY}"
     )
     try:
-        response = requests.get(url, timeout=15)
+        response = requests.get(url)
         response.raise_for_status()
-        data = response.json()
-        
-        if data.get('status') == 'OK':
-            return data.get("results", [])
-        else:
-            st.error(f"Places API error: {data.get('status', 'Unknown error')}")
-            return []
-            
+        return response.json().get("results", [])
     except requests.RequestException as e:
         st.error(f"Failed to fetch hospitals: {e}")
         return []
@@ -173,26 +102,20 @@ def get_hospital_details(place_id):
         f"place_id={place_id}&fields=formatted_phone_number,website,formatted_address,rating,user_ratings_total&key={GOOGLE_API_KEY}"
     )
     try:
-        response = requests.get(url, timeout=10)
+        response = requests.get(url)
         response.raise_for_status()
-        data = response.json()
-        
-        if data.get('status') == 'OK':
-            result = data.get("result", {})
-            return {
-                "phone": result.get("formatted_phone_number", "Not available"),
-                "website": result.get("website", "Not available"),
-                "address": result.get("formatted_address", "Not available"),
-                "rating": result.get("rating", "N/A"),
-                "total_ratings": result.get("user_ratings_total", 0)
-            }
-        else:
-            st.warning(f"Details API error for place_id {place_id}: {data.get('status', 'Unknown error')}")
-            
+        result = response.json().get("result", {})
+        return {
+            "phone": result.get("formatted_phone_number", "Not available"),
+            "website": result.get("website", "Not available"),
+            "address": result.get("formatted_address", "Not available"),
+            "rating": result.get("rating", "N/A"),
+            "total_ratings": result.get("user_ratings_total", 0)
+        }
     except requests.RequestException as e:
         st.error(f"Failed to fetch details for place_id {place_id}: {e}")
-        
-    return {"phone": "Not available", "website": "Not available", "address": "Not available", "rating": "N/A", "total_ratings": 0}
+        return {"phone": "Not available", "website": "Not available", "address": "Not available", "rating": "N/A",
+                "total_ratings": 0}
 
 
 # Function to estimate treatment prices using Groq API
@@ -234,6 +157,14 @@ def get_google_maps_link(lat, lng, hospital_name):
 
 # Streamlit App
 st.set_page_config(page_title="Hospital Finder", page_icon="🏥", layout="wide")
+
+import streamlit as st
+
+# Custom CSS for better styling
+import streamlit as st
+
+# Custom CSS for better styling
+import streamlit as st
 
 # Custom CSS for better styling
 st.markdown("""
@@ -352,21 +283,8 @@ with col6:
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# Location input method selection
-st.subheader("📍 Location Settings")
-location_method = st.radio(
-    "Choose how to set your location:",
-    ["Auto-detect location", "Enter city/area manually"],
-    help="Auto-detect uses your IP address (less accurate). Manual entry uses city name (more accurate)."
-)
 
-manual_location = None
-if location_method == "Enter city/area manually":
-    manual_location = st.text_input(
-        "Enter your city or area:",
-        placeholder="e.g., Bengaluru, Mumbai, Delhi, or specific area like Koramangala",
-        help="Enter city name or specific area for more accurate results"
-    )
+
 
 # User inputs
 st.subheader("Select Medical Condition 🔬")
@@ -383,7 +301,7 @@ hospital_type = st.selectbox(
     help="Choose your preferred hospital type"
 )
 
-st.subheader("Search Radius 🎯")
+st.subheader("Search Radius ??")
 radius_km = st.number_input(
     "Search Radius (km):",
     min_value=0.5,
@@ -397,32 +315,34 @@ radius_km = st.number_input(
 if st.button("🔍 Find Hospitals & Estimate Costs", type="primary", use_container_width=True):
     if disease == "Select a Type":
         st.error("❌ Please select a medical condition first!")
-    elif location_method == "Enter city/area manually" and not manual_location:
-        st.error("❌ Please enter your city or area!")
     else:
-        # Initialize hospitals variable
+        # FIXED: Initialize hospitals variable to prevent NameError
         hospitals = []
-        location_data = None
         
-        # Get location based on selected method
-        if location_method == "Enter city/area manually" and manual_location:
-            with st.spinner("🌍 Getting coordinates for your location..."):
-                location_data = geocode_location(manual_location)
-        else:
-            with st.spinner("🌍 Auto-detecting your location..."):
-                location_data = get_user_location()
+        with st.spinner("🌍 Getting your location..."):
+            location_data = get_location_from_google_api()
 
         if location_data:
             lat = location_data['location']['lat']
             lng = location_data['location']['lng']
-            
-            # Display location info
-            if 'formatted_address' in location_data:
-                st.success(f"📍 Location: {location_data['formatted_address']}")
-            elif 'city' in location_data:
-                st.success(f"📍 Location: {location_data['city']}, {location_data.get('region', '')}, {location_data.get('country', '')}")
-            else:
-                st.success(f"📍 Location found: Lat: {lat:.4f}, Lng: {lng:.4f}")
+            accuracy = location_data['accuracy']
+            location_name = f"Lat: {lat:.4f}, Lng: {lng:.4f}"
+
+            # Add reverse geocoding to get place name
+            geocode_url = f"https://maps.googleapis.com/maps/api/geocode/json?latlng={lat},{lng}&key={GOOGLE_API_KEY}"
+            try:
+                geocode_response = requests.get(geocode_url)
+                geocode_response.raise_for_status()
+                geocode_data = geocode_response.json()
+
+                if geocode_data['results']:
+                    place_name = geocode_data['results'][0]['formatted_address']
+                    st.success(
+                        f"📍 Location found: {place_name} | Lat: {lat:.4f}, Lng: {lng:.4f} (±{accuracy} meters accuracy)")
+                else:
+                    st.success(f"📍 Location found: Lat: {lat:.4f}, Lng: {lng:.4f} (±{accuracy} meters accuracy)")
+            except:
+                st.success(f"📍 Location found: Lat: {lat:.4f}, Lng: {lng:.4f} (±{accuracy} meters accuracy)")
 
             # Search for hospitals
             with st.spinner("🏥 Searching for nearby hospitals..."):
@@ -502,9 +422,9 @@ if st.button("🔍 Find Hospitals & Estimate Costs", type="primary", use_contain
 
                         st.markdown("---")
             else:
-                st.warning(f"⚠️ No {hospital_type.lower()} hospitals found within {radius_km} km of your location. Try increasing the search radius or changing the hospital type.")
+                st.warning("⚠️ No hospitals found in your area. Try increasing the search radius.")
         else:
-            st.error("❌ Unable to determine your location. Please try the manual location entry method.")
+            st.error("❌ Unable to determine your location. Please check your internet connection and try again.")
 
 # Footer
 st.markdown("---")
