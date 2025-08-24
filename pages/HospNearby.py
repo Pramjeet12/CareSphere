@@ -6,16 +6,14 @@ import pandas as pd
 from dotenv import load_dotenv
 import os
 
-# --- Load secrets from .env ---
-load_dotenv()
 
-# Access keys safely
-GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY", "")
+# Use st.secrets instead of dotenv
+GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
+GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
 
-# Initialize client with Groq key
+# Initialize Groq client
+from groq import Groq
 groq_client = Groq(api_key=GROQ_API_KEY)
-
 
 
 # Expanded list of medical specialties and health conditions
