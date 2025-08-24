@@ -256,4 +256,8 @@ How to use the CareSphere web app:
 
 [![FitFuel](https://img.youtube.com/vi/9vfroLDTQyk/0.jpg)](https://www.youtube.com/watch?v=9vfroLDTQyk)
 
+### **HerAssist Demo**
+
+[![HerAssist](https://img.youtube.com/vi/IGLn1btIQfw/0.jpg)](https://www.youtube.com/watch?v=IGLn1btIQfw)
+
 
