@@ -7,3 +7,12 @@ tensorflow
 keras
 librosa
 datetime
+easyocr
+tempfile
+os
+cv2
+groq
+googlemaps
+streamlit-folium
+requests
+python-dotenv
