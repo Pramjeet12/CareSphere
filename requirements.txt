@@ -6,13 +6,11 @@ scikit-learn
 tensorflow
 keras
 librosa
-datetime
 easyocr
-cv2
+opencv-python
 groq
 googlemaps
 folium
 requests
-dotenv
-
+python-dotenv
 
