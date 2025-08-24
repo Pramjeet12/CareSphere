@@ -13,6 +13,7 @@ os
 cv2
 groq
 googlemaps
-streamlit-folium
+folium
 requests
-python-dotenv
+dotenv
+
