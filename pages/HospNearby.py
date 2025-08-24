@@ -6,14 +6,16 @@ import pandas as pd
 from dotenv import load_dotenv
 import os
 
+# --- Load secrets from .env ---
+load_dotenv()
 
-# Use st.secrets instead of dotenv
-GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
-GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
+# Access keys safely
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY", "")
 
-# Initialize Groq client
-from groq import Groq
+# Initialize client with Groq key
 groq_client = Groq(api_key=GROQ_API_KEY)
+
 
 
 # Expanded list of medical specialties and health conditions
@@ -58,11 +60,8 @@ health_conditions = [
 
 # Function to get user's approximate location using Google Geolocation API
 def get_location_from_google_api():
-    # FIXED: Correct Google Geolocation API endpoint
     url = f"https://www.googleapis.com/geolocation/v1/geolocate?key={GOOGLE_API_KEY}"
-    payload = {
-        "considerIp": True
-    }
+    payload = {}
     try:
         response = requests.post(url, json=payload)
         response.raise_for_status()
@@ -316,9 +315,6 @@ if st.button("🔍 Find Hospitals & Estimate Costs", type="primary", use_contain
     if disease == "Select a Type":
         st.error("❌ Please select a medical condition first!")
     else:
-        # FIXED: Initialize hospitals variable to prevent NameError
-        hospitals = []
-        
         with st.spinner("🌍 Getting your location..."):
             location_data = get_location_from_google_api()
 
@@ -348,81 +344,79 @@ if st.button("🔍 Find Hospitals & Estimate Costs", type="primary", use_contain
             with st.spinner("🏥 Searching for nearby hospitals..."):
                 hospitals = get_nearby_hospitals(lat, lng, hospital_type, radius_km)
 
-            if hospitals:
-                st.markdown(f"<h3 class='section-header'>🏥 Found {len(hospitals[:10])} Nearby Hospitals</h3>",
-                            unsafe_allow_html=True)
+        if hospitals:
+            st.markdown(f"<h3 class='section-header'>🏥 Found {len(hospitals[:10])} Nearby Hospitals</h3>",
+                        unsafe_allow_html=True)
 
-                for idx, hospital in enumerate(hospitals[:10], 1):
-                    name = hospital.get("name", "Unknown Hospital")
-                    place_id = hospital.get("place_id")
-                    hospital_lat = hospital.get("geometry", {}).get("location", {}).get("lat", lat)
-                    hospital_lng = hospital.get("geometry", {}).get("location", {}).get("lng", lng)
+            for idx, hospital in enumerate(hospitals[:10], 1):
+                name = hospital.get("name", "Unknown Hospital")
+                place_id = hospital.get("place_id")
+                hospital_lat = hospital.get("geometry", {}).get("location", {}).get("lat", lat)
+                hospital_lng = hospital.get("geometry", {}).get("location", {}).get("lng", lng)
 
-                    # Get detailed hospital information
-                    with st.spinner(f"Getting details for {name}..."):
-                        details = get_hospital_details(place_id) if place_id else {
-                            "phone": "Not available",
-                            "website": "Not available",
-                            "address": hospital.get("vicinity", "Not available"),
-                            "rating": "N/A",
-                            "total_ratings": 0
-                        }
+                # Get detailed hospital information
+                with st.spinner(f"Getting details for {name}..."):
+                    details = get_hospital_details(place_id) if place_id else {
+                        "phone": "Not available",
+                        "website": "Not available",
+                        "address": hospital.get("vicinity", "Not available"),
+                        "rating": "N/A",
+                        "total_ratings": 0
+                    }
 
-                        # Estimate treatment price
-                        price = estimate_treatment_price(name, details["address"], hospital_type, disease)
+                    # Estimate treatment price
+                    price = estimate_treatment_price(name, details["address"], hospital_type, disease)
 
-                    # Create hospital card
-                    with st.container():
-                        st.markdown(f"""
-                        <div class="hospital-card">
-                            <h4>🏥 {idx}. {name}</h4>
-                        </div>
-                        """, unsafe_allow_html=True)
+                # Create hospital card
+                with st.container():
+                    st.markdown(f"""
+                    <div class="hospital-card">
+                        <h4>🏥 {idx}. {name}</h4>
+                    </div>
+                    """, unsafe_allow_html=True)
 
-                        # Hospital details in columns
-                        info_col1, info_col2, info_col3 = st.columns(3)
+                    # Hospital details in columns
+                    info_col1, info_col2, info_col3 = st.columns(3)
 
-                        with info_col1:
-                            st.markdown(f"**Address:** {details['address']}")
-                            if details['rating'] != "N/A":
-                                st.markdown(f"**Rating:** {details['rating']}/5 ({details['total_ratings']} reviews)")
-                            else:
-                                st.markdown("**Rating:** Not rated")
+                    with info_col1:
+                        st.markdown(f"**Address:** {details['address']}")
+                        if details['rating'] != "N/A":
+                            st.markdown(f"**Rating:** {details['rating']}/5 ({details['total_ratings']} reviews)")
+                        else:
+                            st.markdown("**Rating:** Not rated")
 
-                        with info_col2:
-                            st.markdown(f"**Estimated Cost:** {price}")
-                            if details['phone'] != "Not available":
-                                st.markdown(f"**Phone:** [{details['phone']}](tel:{details['phone']})")
-                            else:
-                                st.markdown("**Phone:** Not available")
+                    with info_col2:
+                        st.markdown(f"**Estimated Cost:** {price}")
+                        if details['phone'] != "Not available":
+                            st.markdown(f"**Phone:** [{details['phone']}](tel:{details['phone']})")
+                        else:
+                            st.markdown("**Phone:** Not available")
 
-                        with info_col3:
-                            if details['website'] != "Not available":
-                                st.markdown(f"**Website:** [Visit Website]({details['website']})")
-                            else:
-                                st.markdown("**Website:** Not available")
+                    with info_col3:
+                        if details['website'] != "Not available":
+                            st.markdown(f"**Website:** [Visit Website]({details['website']})")
+                        else:
+                            st.markdown("**Website:** Not available")
 
-                            # Google Maps link
-                            maps_link = get_google_maps_link(hospital_lat, hospital_lng, name)
-                            st.markdown(f"**Directions:** [Open in Google Maps]({maps_link})")
+                        # Google Maps link
+                        maps_link = get_google_maps_link(hospital_lat, hospital_lng, name)
+                        st.markdown(f"**Directions:** [Open in Google Maps]({maps_link})")
 
-                        # Action buttons
-                        btn_col1, btn_col2, btn_col3 = st.columns(3)
+                    # Action buttons
+                    btn_col1, btn_col2, btn_col3 = st.columns(3)
 
-                        with btn_col1:
-                            if details['phone'] != "Not available":
-                                st.link_button("📞 Call Now", f"tel:{details['phone']}", use_container_width=True)
+                    with btn_col1:
+                        if details['phone'] != "Not available":
+                            st.link_button("📞 Call Now", f"tel:{details['phone']}", use_container_width=True)
 
-                        with btn_col2:
-                            if details['website'] != "Not available":
-                                st.link_button("🌐 Visit Website", details['website'], use_container_width=True)
+                    with btn_col2:
+                        if details['website'] != "Not available":
+                            st.link_button("🌐 Visit Website", details['website'], use_container_width=True)
 
-                        with btn_col3:
-                            st.link_button("🗺️ Get Directions", maps_link, use_container_width=True)
+                    with btn_col3:
+                        st.link_button("🗺️ Get Directions", maps_link, use_container_width=True)
 
-                        st.markdown("---")
-            else:
-                st.warning("⚠️ No hospitals found in your area. Try increasing the search radius.")
+                    st.markdown("---")
         else:
             st.error("❌ Unable to determine your location. Please check your internet connection and try again.")
 
