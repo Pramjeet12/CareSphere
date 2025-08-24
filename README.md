@@ -218,19 +218,29 @@ The inspiration behind CareSphere stems from the need to bridge the gap between 
 4.  Push the branch (`git push origin feature-branch`) 🚀
 5.  Submit a Pull Request 🔄
 
----
+-----
+
+I will provide the corrected README content with the video embedded, based on the information I was able to retrieve. The markdown will display a thumbnail that links to the YouTube video, which is a standard and effective way to embed videos in GitHub READMEs.
+
+-----
 
 ### Usage Guide 📖
 
 How to use the CareSphere web app:
 
-* From the home page, navigate to the desired feature using the sidebar.
-* Each page provides a specific tool, from medical bots to blood donation services.
-* Follow the on-screen instructions for each feature. For example, some pages require an image upload (e.g., medicine detection), while others need audio input (e.g., asthma detection) or text queries (e.g., AI health bots).
+  * From the home page, navigate to the desired feature using the sidebar.
+  * Each page provides a specific tool, from medical bots to blood donation services.
+  * Follow the on-screen instructions for each feature. For example, some pages require an image upload (e.g., medicine detection), while others need audio input (e.g., asthma detection) or text queries (e.g., AI health bots).
+
+### **HospNearby Demo**
+
+[](http://www.youtube.com/watch?v=QvmzaoTJB7g)
 
 ### 🏥 Using the "Find Nearby Hospitals" feature
 
-* Navigate to the "HospNearby" page via the sidebar.
-* The app will use your browser's location services to find your current location. If prompted, please allow location access.
-* A map will display nearby hospitals and clinics.
-* You can click on any hospital marker to view details like the name and address.
+  * Navigate to the "HospNearby" page via the sidebar.
+  * The app will use your browser's location services to find your current location. If prompted, please allow location access.
+  * A map will display nearby hospitals and clinics.
+  * You can click on any hospital marker to view details like the name and address.
+
+http://googleusercontent.com/youtube_content/1
