@@ -252,4 +252,8 @@ How to use the CareSphere web app:
 
 [![MultiDxPred](https://img.youtube.com/vi/OZIIl7NQ2bI/0.jpg)](https://www.youtube.com/watch?v=OZIIl7NQ2bI)
 
+### **FitFuel Demo**
+
+[![FitFuel](https://img.youtube.com/vi/9vfroLDTQyk/0.jpg)](https://www.youtube.com/watch?v=9vfroLDTQyk)
+
 
