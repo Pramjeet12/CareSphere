@@ -232,4 +232,8 @@ How to use the CareSphere web app:
 
 [![HospNearby](https://img.youtube.com/vi/QvmzaoTJB7g/0.jpg)](https://www.youtube.com/watch?v=QvmzaoTJB7g)
 
+### **MediRxScan Demo**
+
+[![MediRxScan](https://img.youtube.com/vi/sRDwdajwXQA/0.jpg)](https://www.youtube.com/watch?v=sRDwdajwXQA)
+
 
