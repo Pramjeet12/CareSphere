@@ -6,11 +6,6 @@ scikit-learn
 tensorflow
 keras
 librosa
-easyocr
-opencv-python
-groq
-googlemaps
-folium
-requests
-python-dotenv
+datetime
+
 
