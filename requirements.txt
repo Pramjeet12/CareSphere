@@ -8,12 +8,11 @@ keras
 librosa
 datetime
 easyocr
-tempfile
-os
 cv2
 groq
 googlemaps
 folium
 requests
 dotenv
+
 
