@@ -260,4 +260,8 @@ How to use the CareSphere web app:
 
 [![HerAssist](https://img.youtube.com/vi/IGLn1btIQfw/0.jpg)](https://www.youtube.com/watch?v=IGLn1btIQfw)
 
+### **MedAssist Demo**
+
+[![MedAssist](https://img.youtube.com/vi/1CM8aF1y-ZU/0.jpg)](https://www.youtube.com/watch?v=1CM8aF1y-ZU)
+
 
